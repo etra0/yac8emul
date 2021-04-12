@@ -2,9 +2,11 @@
 //
 
 #include <yac8emul/yac8emul.h>
+#include <yac8emul/interpreter.h>
 
 int main()
 {
-	cout << "Hello CMake." << endl;
+  yac8emul::cpu cpu{};
+	std::cout << "Hello CMake." << std::endl;
 	return 0;
 }
