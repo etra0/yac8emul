@@ -13,7 +13,7 @@ namespace yac8emul {
 
         enum class instruction : std::uint8_t {
             // SYS addr, CLS or RET
-            SYSTEM =  0x0,
+            SYSTEM = 0x0,
             // JMP addr - (1nnn)
             JP,
             // Call addr - (2nnn)
@@ -28,8 +28,6 @@ namespace yac8emul {
             LDimm,
             // Adds kk to Vx - (7xkk)
             ADD,
-            // Loads y to x - (8xy0)
-            LD,
             // 2 register operations, (8xyK)
             // where K:
             // 0 -> Vk = Vy
@@ -52,7 +50,8 @@ namespace yac8emul {
             RND,
             // Read n bytes from I, then displayed at Vx, Vy. Sprites are XORed onto the existing screen. 
             // If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0. If the 
-            // sprite is positioned so part of it is outside the coordinates of the display, it wraps around to the opposite side of the screen.
+            // sprite is positioned so part of it is outside the coordinates of the display, 
+            // it wraps around to the opposite side of the screen.
             DRW,
             // Ex9E - SKP Vx -  Skip next instruction if key with the value of Vx is pressed.
             // ExA1 - SKNP Vx - Skip next instruction if key with the value of Vx is not pressed.
@@ -60,29 +59,33 @@ namespace yac8emul {
         };
 
         // TODO: Check if PC *really* starts at 0x200.
-        cpu() : pc(0x200), RAM(), registers(), sp(0), stack(), frame_buffer() {
+        cpu() : pc(0x200), RAM(), registers(), sp(0), stack(), frame_buffer(), i(0), random_state(1234) {
             this->registers.fill(0);
             this->RAM.fill(0);
-            this->frame_buffer.fill(0);
-
+            this->disp_clear();
 
             // copy the sprites to the beginning of the RAM
             using namespace yac8emul::constants;
             std::copy(sprites.begin(), sprites.end(), this->RAM.begin());
         };
 
-        void set_register(cpu::reg r, std::uint8_t val) noexcept;
+        void disp_clear();
         void parse_instruction(std::uint16_t inst);
+        void execute_regop(cpu::reg Vx, cpu::reg Vy, std::uint8_t modifier);
         void load_rom(const std::vector<std::uint8_t>& rom);
+
+        // Fast Xorshift because I think we don't need anything better.
+        std::uint8_t get_random_value();
+
         void run();
 
-        std::uint8_t get_register(cpu::reg r) noexcept;
+        std::uint8_t& get_register(cpu::reg r) noexcept;
 
         std::array<std::uint8_t, 4096> RAM;
     private:
         std::array<std::uint8_t, 16> registers;
         std::stack<std::uint16_t> stack;
-        std::array<bool, 64 * 32> frame_buffer;
+        std::array<std::array<bool, 32>, 64> frame_buffer;
 
         // Special registers
         // Program Counter
@@ -93,6 +96,8 @@ namespace yac8emul {
 
         // Special register to store an address
         std::uint16_t i;
+
+        std::uint64_t random_state;
 
     };
 

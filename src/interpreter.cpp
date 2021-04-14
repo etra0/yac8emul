@@ -2,8 +2,9 @@
 
 namespace yac8emul {
 
-void cpu::set_register(cpu::reg r, std::uint8_t val) noexcept {
-  this->registers[static_cast<size_t>(r)] = val;
+void cpu::disp_clear() {
+  for (auto &line : this->frame_buffer)
+    line.fill(0);
 }
 
 void cpu::parse_instruction(std::uint16_t inst) {
@@ -17,7 +18,17 @@ void cpu::parse_instruction(std::uint16_t inst) {
   this->pc += 2;
   switch (kind) {
   case cpu::instruction::SYSTEM:
-    throw "SYSCALL";
+    switch (inst) {
+    case 0xE0:
+      this->disp_clear();
+      break;
+    case 0xEE:
+      this->pc = this->stack.top();
+      this->stack.pop();
+      break;
+    default:
+      throw "SYSCALL";
+    }
     break;
   case cpu::instruction::JP:
     this->pc = nnn;
@@ -38,26 +49,110 @@ void cpu::parse_instruction(std::uint16_t inst) {
     if (this->get_register(Vx) == this->get_register(Vy))
       this->pc += 2;
     break;
-  case cpu::instruction::LDimm:
-    this->set_register(Vx, nnn);
+  case cpu::instruction::LDimm: {
+    std::uint8_t &v = this->get_register(Vx);
+    v = nnn;
+    break;
+  }
+  case cpu::instruction::ADD: {
+    std::uint8_t &v = this->get_register(Vx);
+    v += kk;
+    break;
+  }
+  case cpu::instruction::REGOP:
+    execute_regop(Vx, Vy, modifier);
+    break;
+  case cpu::instruction::SNE:
+    if (this->get_register(Vx) != this->get_register(Vy))
+      this->pc += 2;
+    break;
+  case cpu::instruction::LDI:
+    this->i = nnn;
+    break;
+  case cpu::instruction::JPV0:
+    this->pc = this->get_register(cpu::reg::V0) + nnn;
+    break;
+  case cpu::instruction::RND: {
+    std::uint8_t &v = this->get_register(Vx);
+    v = this->get_random_value() & kk;
+    break;
+  }
+  case cpu::instruction::DRW: 
+    throw "not implemented";
     break;
   default:
     throw "not implemented";
   }
+}
 
+void cpu::execute_regop(cpu::reg Vx, cpu::reg Vy, std::uint8_t modifier) {
+  std::uint8_t &reg_x = this->get_register(Vx);
+  std::uint8_t &reg_y = this->get_register(Vy);
+  std::uint8_t &reg_vf = this->get_register(cpu::reg::VF);
+  std::uint16_t container = 0;
+
+  switch (modifier) {
+  case 0x0:
+    reg_x = reg_y;
+    break;
+  case 0x1:
+    reg_x |= reg_y;
+    break;
+  case 0x2:
+    reg_x &= reg_y;
+    break;
+  case 0x3:
+    reg_x ^= reg_y;
+    break;
+  case 0x4:
+    container = reg_x + reg_y;
+    reg_vf = container > 255;
+    reg_x = container & 0xFF;
+    break;
+  case 0x5:
+    // TODO: Check if this is correct.
+    reg_vf = reg_x > reg_y;
+    reg_x -= reg_y;
+    break;
+  case 0x6:
+    reg_vf = reg_x & 1;
+    reg_x >>= 1;
+    break;
+  case 0x7:
+    reg_vf = reg_y > reg_x;
+    reg_x = reg_y - reg_x;
+    break;
+  case 0xE:
+    reg_vf = (0x80 & reg_x) >> 7;
+    reg_x <<= 1;
+    break;
+  default:
+    throw "illegal instruction";
+  }
 }
 
 void cpu::load_rom(const std::vector<uint8_t> &rom) {
   std::copy(rom.begin(), rom.end(), this->RAM.begin() + 0x200);
 }
 
+std::uint8_t cpu::get_random_value() {
+  std::uint64_t x = this->random_state;
+  x ^= x << 13;
+  x ^= x >> 7;
+  x ^= x << 17;
+  this->random_state = x;
+  return x & 0xFF;
+}
+
 void cpu::run() {
   while (1) {
-    this->parse_instruction(this->RAM[this->pc] << 8 | this->RAM[this->pc+1]);
+    if (this->pc > this->RAM.size() || this->pc + 1 > this->RAM.size())
+      throw "Out of the range";
+    this->parse_instruction(this->RAM[this->pc] << 8 | this->RAM[this->pc + 1]);
   }
 }
 
-uint8_t cpu::get_register(cpu::reg r) noexcept {
+uint8_t &cpu::get_register(cpu::reg r) noexcept {
   return this->registers[static_cast<size_t>(r)];
 }
 
