@@ -7,7 +7,5 @@
 int main() {
   yac8emul::cpu cpu{};
 
-  cpu.parse_instruction(0x0000);
-  std::cout << "Hello CMake." << std::endl;
   return 0;
 }

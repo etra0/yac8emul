@@ -2,6 +2,7 @@
 
 #include <yac8emul/yac8emul.h>
 #include <yac8emul/constants.h>
+#include <yac8emul/errors.h>
 
 
 namespace yac8emul {
@@ -73,19 +74,19 @@ namespace yac8emul {
         void parse_instruction(std::uint16_t inst);
         void execute_regop(cpu::reg Vx, cpu::reg Vy, std::uint8_t modifier);
         void load_rom(const std::vector<std::uint8_t>& rom);
+        const std::array<std::uint8_t, 4096>& get_ram() noexcept;
 
         // Fast Xorshift because I think we don't need anything better.
         std::uint8_t get_random_value();
 
         void run();
-
         std::uint8_t& get_register(cpu::reg r) noexcept;
-
-        std::array<std::uint8_t, 4096> RAM;
+        
     private:
         std::array<std::uint8_t, 16> registers;
         std::stack<std::uint16_t> stack;
         std::array<std::array<bool, 32>, 64> frame_buffer;
+        std::array<std::uint8_t, 4096> RAM;
 
         // Special registers
         // Program Counter

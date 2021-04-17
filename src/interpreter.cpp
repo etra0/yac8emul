@@ -27,7 +27,7 @@ void cpu::parse_instruction(std::uint16_t inst) {
       this->stack.pop();
       break;
     default:
-      throw "SYSCALL";
+      throw yac8emul::errors::not_implemented("SYSCALL");
     }
     break;
   case cpu::instruction::JP:
@@ -77,11 +77,13 @@ void cpu::parse_instruction(std::uint16_t inst) {
     v = this->get_random_value() & kk;
     break;
   }
-  case cpu::instruction::DRW: 
-    throw "not implemented";
+  case cpu::instruction::DRW:
+    throw yac8emul::errors::not_implemented("DRW");
+    break;
     break;
   default:
-    throw "not implemented";
+    throw yac8emul::errors::invalid_instruction("main_instruction",
+                                                std::to_string(inst));
   }
 }
 
@@ -135,6 +137,10 @@ void cpu::load_rom(const std::vector<uint8_t> &rom) {
   std::copy(rom.begin(), rom.end(), this->RAM.begin() + 0x200);
 }
 
+const std::array<std::uint8_t, 4096> &cpu::get_ram() noexcept {
+  return this->RAM;
+}
+
 std::uint8_t cpu::get_random_value() {
   std::uint64_t x = this->random_state;
   x ^= x << 13;
@@ -147,8 +153,20 @@ std::uint8_t cpu::get_random_value() {
 void cpu::run() {
   while (1) {
     if (this->pc > this->RAM.size() || this->pc + 1 > this->RAM.size())
-      throw "Out of the range";
-    this->parse_instruction(this->RAM[this->pc] << 8 | this->RAM[this->pc + 1]);
+      break;
+
+    try {
+      this->parse_instruction(this->RAM[this->pc] << 8 |
+                              this->RAM[this->pc + 1]);
+    } catch (yac8emul::errors::invalid_instruction &e) {
+      std::cout << e.get_info() << std::endl;
+      std::cout << "irrecuperable" << std::endl;
+      break;
+
+    } catch (yac8emul::errors::not_implemented &e) {
+      std::cout << e.get_info() << std::endl;
+    }
+    
   }
 }
 
