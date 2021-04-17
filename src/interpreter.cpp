@@ -80,6 +80,16 @@ void cpu::parse_instruction(std::uint16_t inst) {
   case cpu::instruction::DRW:
     throw yac8emul::errors::not_implemented("DRW");
     break;
+  case cpu::instruction::SKP: {
+    std::uint8_t &v = this->get_register(Vx);
+    if (kk == 0x9E)
+      this->pc += (v != 0) * 2;
+    else if (kk == 0xA1)
+      this->pc += (v == 0) * 2;
+    break;
+  }
+  case cpu::instruction::SPECLD:
+    this->execute_specld(Vx, kk);
     break;
   default:
     throw yac8emul::errors::invalid_instruction("main_instruction",
@@ -130,6 +140,48 @@ void cpu::execute_regop(cpu::reg Vx, cpu::reg Vy, std::uint8_t modifier) {
     break;
   default:
     throw "illegal instruction";
+  }
+}
+
+void cpu::execute_specld(cpu::reg Vx, std::uint8_t modifier) {
+  std::uint8_t &reg_x = this->get_register(Vx);
+  switch (modifier) {
+  case 0x07:
+    reg_x = this->dt;
+    break;
+  case 0x0A:
+    throw yac8emul::errors::not_implemented("specld " + std::to_string(0x0A));
+    break;
+  case 0x15:
+    this->dt = reg_x;
+    break;
+  case 0x18:
+    this->st = reg_x;
+    break;
+  case 0x1E:
+    this->i += reg_x;
+    break;
+  case 0x29:
+    throw yac8emul::errors::not_implemented("specld " + std::to_string(0x29));
+    break;
+  case 0x33:
+    throw yac8emul::errors::not_implemented("specld " + std::to_string(0x33));
+    break;
+  case 0x55:
+    for (std::size_t i = 0; i <= static_cast<std::size_t>(Vx); i++) {
+      auto ir = static_cast<cpu::reg>(i);
+      this->RAM[this->i + i] = this->get_register(ir);
+    }
+    break;
+  case 0x65:
+    for (std::size_t i = 0; i <= static_cast<std::size_t>(Vx); i++) {
+      auto &reg = this->get_register(static_cast<cpu::reg>(i));
+      reg = this->RAM[this->i + i];
+    }
+    break;
+  default:
+    throw yac8emul::errors::invalid_instruction("modifier",
+                                                std::to_string(modifier));
   }
 }
 

@@ -56,11 +56,22 @@ namespace yac8emul {
             DRW,
             // Ex9E - SKP Vx -  Skip next instruction if key with the value of Vx is pressed.
             // ExA1 - SKNP Vx - Skip next instruction if key with the value of Vx is not pressed.
-            SKP
+            SKP,
+            // 0xFxkk - Special LD, where kk:
+            // 07 - Set Vx = delay timer
+            // 0A - Wait for a key press, store in Vx (execution should be paused).
+            // 15 - Set Delay timer = Vx.
+            // 18 - Sound timer = Vx.
+            // 1E - I = I + Vx.
+            // 29 - Set I = location of sprite for digit Vx. (Load the sprite addr?)
+            // 33 - Store BCD representation of Vx in memory locations I, I+1, and I+2.
+            // 55 - Store register V0 to Vx in memory starting at I.,
+            // 65 - Read registers through V0 to Vx starting at location I.
+            SPECLD,
         };
 
         // TODO: Check if PC *really* starts at 0x200.
-        cpu() : pc(0x200), RAM(), registers(), sp(0), stack(), frame_buffer(), i(0), random_state(1234) {
+        cpu() : pc(0x200), RAM(), registers(), sp(0), stack(), frame_buffer(), i(0), random_state(1234), dt(0), st(0) {
             this->registers.fill(0);
             this->RAM.fill(0);
             this->disp_clear();
@@ -73,6 +84,7 @@ namespace yac8emul {
         void disp_clear();
         void parse_instruction(std::uint16_t inst);
         void execute_regop(cpu::reg Vx, cpu::reg Vy, std::uint8_t modifier);
+        void execute_specld(cpu::reg Vx, std::uint8_t modifier);
         void load_rom(const std::vector<std::uint8_t>& rom);
         const std::array<std::uint8_t, 4096>& get_ram() noexcept;
 
@@ -97,6 +109,12 @@ namespace yac8emul {
 
         // Special register to store an address
         std::uint16_t i;
+
+        // Delay timer
+        std::uint8_t dt;
+
+        // Sound timer
+        std::uint8_t st;
 
         std::uint64_t random_state;
 
