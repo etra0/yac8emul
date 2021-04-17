@@ -3,9 +3,14 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 include(Tools3DS)
-add_3dsx_target(yac8emul NO_SMDH)
+
+find_package(CTRULIB REQUIRED)
+
+set(BUILD_TESTING OFF)
+set(FORCE_SMDHTOOL ON)
 
 add_executable(
 	yac8emul-3ds
@@ -15,5 +20,7 @@ add_executable(
 target_link_libraries(
 	yac8emul-3ds
 	yac8emul-lib
+	3ds::ctrulib
 )
 
+add_cia_target(yac8emul-3ds data/spec.rsf data/icon.png data/sound.wav)
