@@ -3,13 +3,13 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cstddef>
-#include <algorithm>
+#include <fstream>
 #include <iostream>
-#include <iostream>
-#include <vector>
 #include <stack>
+#include <vector>
 
 // TODO: Reference additional headers your program requires here.

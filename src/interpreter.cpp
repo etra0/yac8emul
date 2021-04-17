@@ -216,7 +216,9 @@ void cpu::run() {
       break;
 
     } catch (yac8emul::errors::not_implemented &e) {
+#ifdef YAC8EMUL_VERBOSE
       std::cout << e.get_info() << std::endl;
+#endif
     }
     
   }
