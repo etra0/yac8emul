@@ -4,6 +4,8 @@
 cmake_minimum_required (VERSION 3.8)
 project ("yac8emul")
 
+OPTION(BUILD_3DS "" off)
+
 # Add source to this project's
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
@@ -11,9 +13,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 add_subdirectory(src)
 add_subdirectory(vendor)
 
-include(CTest)
+if (BUILD_3DS)
+	add_subdirectory(3ds)
+endif ()
+
 if (BUILD_TESTING)
 	add_subdirectory(test)
 endif ()
-
-# TODO: Add tests and install targets if needed.
