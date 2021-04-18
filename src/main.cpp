@@ -3,6 +3,7 @@
 
 #include <yac8emul/interpreter.h>
 #include <yac8emul/yac8emul.h>
+#include <yac8emul/graphics.h>
 
 int main(int argc, char **argv) {
   if (argc < 2) {

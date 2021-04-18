@@ -78,7 +78,7 @@ void cpu::parse_instruction(std::uint16_t inst) {
     break;
   }
   case cpu::instruction::DRW:
-    throw yac8emul::errors::not_implemented("DRW");
+    this->draw_on_screen(Vx, Vy, modifier);
     break;
   case cpu::instruction::SKP: {
     std::uint8_t &v = this->get_register(Vx);
@@ -94,6 +94,15 @@ void cpu::parse_instruction(std::uint16_t inst) {
   default:
     throw yac8emul::errors::invalid_instruction("main_instruction",
                                                 std::to_string(inst));
+  }
+}
+
+// TODO: Check the VF thing.
+void cpu::draw_on_screen(cpu::reg Vx, cpu::reg Vy, std::uint8_t n) {
+  std::uint8_t& pos_x = this->get_register(Vx);
+  std::uint8_t& pos_y = this->get_register(Vy);
+  for (std::size_t i = 0; i < n; i++) {
+    this->frame_buffer[pos_x][pos_y + i] ^= this->i + i*sizeof(std::uint8_t);
   }
 }
 

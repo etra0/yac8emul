@@ -2,9 +2,9 @@
 # project specific logic here.
 #
 cmake_minimum_required (VERSION 3.8)
-project ("yac8emul")
+project ("yac8emul" CXX)
 
-OPTION(BUILD_3DS "" off)
+OPTION(BUILD_3DS "Build the 3DS version of this emulator" off)
 
 # Add source to this project's
 set(CMAKE_CXX_STANDARD 17)

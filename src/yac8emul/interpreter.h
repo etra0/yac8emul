@@ -49,13 +49,16 @@ namespace yac8emul {
             JPV0,
             // Vx = RND And kk - (Cxkk)
             RND,
-            // Read n bytes from I, then displayed at Vx, Vy. Sprites are XORed onto the existing screen. 
-            // If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0. If the 
-            // sprite is positioned so part of it is outside the coordinates of the display, 
-            // it wraps around to the opposite side of the screen.
+            // Read n bytes from I, then displayed at Vx, Vy. Sprites are XORed
+            // onto the existing screen.  If this causes any pixels to be
+            // erased, VF is set to 1, otherwise it is set to 0. If the sprite
+            // is positioned so part of it is outside the coordinates of the
+            // display, it wraps around to the opposite side of the screen.
             DRW,
-            // Ex9E - SKP Vx -  Skip next instruction if key with the value of Vx is pressed.
-            // ExA1 - SKNP Vx - Skip next instruction if key with the value of Vx is not pressed.
+            // Ex9E - SKP Vx -  Skip next instruction if key with the value of
+            // Vx is pressed.
+            // ExA1 - SKNP Vx - Skip next instruction if key with the value of
+            // Vx is not pressed.
             SKP,
             // 0xFxkk - Special LD, where kk:
             // 07 - Set Vx = delay timer
@@ -82,6 +85,7 @@ namespace yac8emul {
         };
 
         void disp_clear();
+        void draw_on_screen(cpu::reg Vx, cpu::reg Vy, std::uint8_t n);
         void parse_instruction(std::uint16_t inst);
         void execute_instruction();
         void execute_regop(cpu::reg Vx, cpu::reg Vy, std::uint8_t modifier);
@@ -98,7 +102,7 @@ namespace yac8emul {
     private:
         std::array<std::uint8_t, 16> registers;
         std::stack<std::uint16_t> stack;
-        std::array<std::array<bool, 32>, 64> frame_buffer;
+        std::array<std::array<std::uint8_t, 32 / sizeof(std::uint8_t)>, 64 / sizeof(std::uint8_t)> frame_buffer;
         std::array<std::uint8_t, 4096> RAM;
 
         // Special registers

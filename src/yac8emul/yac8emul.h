@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <stack>
 #include <vector>
 
