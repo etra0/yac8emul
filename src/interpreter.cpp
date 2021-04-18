@@ -202,6 +202,15 @@ std::uint8_t cpu::get_random_value() {
   return x & 0xFF;
 }
 
+void cpu::execute_instruction() {
+  // Check if this should silently fail instead.
+  if (this->pc > this->RAM.size() || this->pc + 1 > this->RAM.size())
+    throw std::invalid_argument("EOL");
+
+  this->parse_instruction(this->RAM[this->pc] << 8 |
+      this->RAM[this->pc + 1]);
+}
+
 void cpu::run() {
   while (1) {
     if (this->pc > this->RAM.size() || this->pc + 1 > this->RAM.size())

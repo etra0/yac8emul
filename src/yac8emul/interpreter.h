@@ -83,6 +83,7 @@ namespace yac8emul {
 
         void disp_clear();
         void parse_instruction(std::uint16_t inst);
+        void execute_instruction();
         void execute_regop(cpu::reg Vx, cpu::reg Vy, std::uint8_t modifier);
         void execute_specld(cpu::reg Vx, std::uint8_t modifier);
         void load_rom(const std::vector<std::uint8_t>& rom);
