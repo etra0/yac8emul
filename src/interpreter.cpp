@@ -99,10 +99,10 @@ void cpu::parse_instruction(std::uint16_t inst) {
 
 // TODO: Check the VF thing.
 void cpu::draw_on_screen(cpu::reg Vx, cpu::reg Vy, std::uint8_t n) {
-  std::uint8_t& pos_x = this->get_register(Vx);
-  std::uint8_t& pos_y = this->get_register(Vy);
+  std::uint8_t &pos_x = this->get_register(Vx);
+  std::uint8_t &pos_y = this->get_register(Vy);
   for (std::size_t i = 0; i < n; i++) {
-    this->frame_buffer[pos_x][pos_y + i] ^= this->i + i*sizeof(std::uint8_t);
+    this->frame_buffer[pos_x][pos_y + i] ^= this->i + i * sizeof(std::uint8_t);
   }
 }
 
@@ -216,29 +216,19 @@ void cpu::execute_instruction() {
   if (this->pc > this->RAM.size() || this->pc + 1 > this->RAM.size())
     throw std::invalid_argument("EOL");
 
-  this->parse_instruction(this->RAM[this->pc] << 8 |
-      this->RAM[this->pc + 1]);
+  this->parse_instruction(this->RAM[this->pc] << 8 | this->RAM[this->pc + 1]);
 }
 
 void cpu::run() {
   while (1) {
-    if (this->pc > this->RAM.size() || this->pc + 1 > this->RAM.size())
-      break;
-
     try {
-      this->parse_instruction(this->RAM[this->pc] << 8 |
-                              this->RAM[this->pc + 1]);
-    } catch (yac8emul::errors::invalid_instruction &e) {
+      this->execute_instruction();
+    } catch (yac8emul::errors::error &e) {
       std::cout << e.get_info() << std::endl;
-      std::cout << "irrecuperable" << std::endl;
+    } catch (std::invalid_argument &e) {
+      std::cout << "non internal error: " << e.what() << std::endl;
       break;
-
-    } catch (yac8emul::errors::not_implemented &e) {
-#ifdef YAC8EMUL_VERBOSE
-      std::cout << e.get_info() << std::endl;
-#endif
     }
-    
   }
 }
 
