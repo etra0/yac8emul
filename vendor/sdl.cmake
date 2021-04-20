@@ -1,1 +1,3 @@
+set(SDL_STATIC ON CACHE BOOL "" FORCE)
+set(SDL_SHARED OFF CACHE BOOL "" FORCE)
 add_subdirectory(sdl)

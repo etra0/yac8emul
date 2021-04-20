@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.8)
 
-add_executable(yac8emul main.cpp "yac8emul/errors.h")
+add_executable(yac8emul main.cpp)
 
 # TODO: Remove this
 add_definitions(-DYAC8EMUL_VERBOSE)
@@ -8,18 +8,22 @@ add_definitions(-DYAC8EMUL_VERBOSE)
 add_library(
 	yac8emul-lib
 	interpreter.cpp
-  yac8emul/errors.h
-  yac8emul/graphics.h
+	yac8emul/errors.h
+	yac8emul/graphics.h
   )
 
 target_include_directories(yac8emul-lib PUBLIC .)
 
 target_link_libraries(
+	yac8emul-lib
+	PUBLIC
+	SDL2::SDL2-static
+)
+
+target_link_libraries(
   yac8emul
   PRIVATE
   yac8emul-lib
-  SDL2::SDL2
-  ${SDL2_LIBRARIES}
 )
 
 if (MSVC)

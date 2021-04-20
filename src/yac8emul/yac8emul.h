@@ -13,4 +13,10 @@
 #include <stack>
 #include <vector>
 
+// For windows we need to define this because reasons
+#if defined(_WIN32)
+#define SDL_MAIN_HANDLED
+#endif
+#include <SDL.h>
+
 // TODO: Reference additional headers your program requires here.
